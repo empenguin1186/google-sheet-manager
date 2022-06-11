@@ -1,0 +1,9 @@
+favorite:
+  scheme: http
+  host: localhost
+  path: admin/favorites
+yakkyubin:
+  scheme: https
+  host: api-pharmacy-pharmacy.dx-base.com
+  path: pharmacies
+  chainId: 6
