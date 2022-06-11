@@ -2,13 +2,11 @@ package infra
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/google/martian/log"
 	"google-sheet-sample/domain/model"
 	"io"
 	"net/http"
 	"net/url"
-	"strconv"
 )
 
 type YakkyubinClient struct {
@@ -21,18 +19,14 @@ func NewYakkyubinClient(config *YakkyubinConfig) *YakkyubinClient {
 }
 
 func (y *YakkyubinClient) Get() ([]*model.StoreInfo, error) {
-	// リクエスト設定
-	u := url.URL{}
-	u.Scheme = y.config.Scheme
-	u.Host = y.config.Host
-	u.Path = y.config.Path
-	q := u.Query()
-	q.Set("chain_id", strconv.Itoa(y.config.ChainId))
-	u.RawQuery = q.Encode()
-	fmt.Printf("url: %v", u)
+	u, err := url.Parse(y.config.Url)
+	if err != nil {
+		log.Errorf("failed to parse url: %v", err)
+		return []*model.StoreInfo{}, err
+	}
 
 	request := http.Request{}
-	request.URL = &u
+	request.URL = u
 	request.Method = "GET"
 
 	response, err := y.client.Do(&request)
@@ -53,12 +47,16 @@ func (y *YakkyubinClient) Get() ([]*model.StoreInfo, error) {
 		return []*model.StoreInfo{}, err
 	}
 
-	var storeInfo []*model.StoreInfo
-	err = json.Unmarshal(body, &storeInfo)
+	var yakkyubinResponse YakkyubinResponse
+	err = json.Unmarshal(body, &yakkyubinResponse)
 	if err != nil {
 		log.Errorf("failed to struct StoreInfo Object: %v", err)
 		return []*model.StoreInfo{}, err
 	}
 
-	return storeInfo, nil
+	return yakkyubinResponse.Pharmacies, nil
+}
+
+type YakkyubinResponse struct {
+	Pharmacies []*model.StoreInfo `json:"pharmacies"`
 }

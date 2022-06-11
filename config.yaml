@@ -3,6 +3,7 @@ favorite:
   host: localhost
   path: admin/favorites
 yakkyubin:
+  url: https://api-pharmacy-pharmacy.dx-base.com/pharmacies?chain_id=6
   scheme: https
   host: api-pharmacy-pharmacy.dx-base.com
   path: pharmacies

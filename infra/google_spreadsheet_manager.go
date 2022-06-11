@@ -33,6 +33,7 @@ func (g *GoogleSpreadSheetService) Save(data []string) error {
 		})
 	}
 
+	// https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/request#appendcellsrequest
 	request := []*sheets.Request{
 		{
 			AppendCells: &sheets.AppendCellsRequest{

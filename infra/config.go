@@ -7,6 +7,7 @@ type FavoriteConfig struct {
 }
 
 type YakkyubinConfig struct {
+	Url     string `yaml:"url"`
 	Scheme  string `yaml:"scheme"`
 	Host    string `yaml:"host"`
 	Path    string `yaml:"path"`
@@ -14,6 +15,6 @@ type YakkyubinConfig struct {
 }
 
 type Config struct {
-	Favorite  FavoriteConfig
-	Yakyuubin YakkyubinConfig
+	Favorite  FavoriteConfig  `yaml:"favorite"`
+	Yakyuubin YakkyubinConfig `yaml:"yakkyubin"`
 }

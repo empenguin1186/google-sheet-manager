@@ -34,7 +34,7 @@ func (s *SaveService) Save() error {
 
 	// 3. 1. 2. で取得したデータを突合して更新データを生成
 	result := make([]string, len(storeInfo)+1)
-	result = append(result, time.Now().Format("2006/Jan/02"))
+	result = append(result, time.Now().Format("2006/01/02"))
 	for _, e := range storeInfo {
 		if v, ok := favoriteMap[e.GetId()]; ok {
 			result = append(result, strconv.Itoa(v))

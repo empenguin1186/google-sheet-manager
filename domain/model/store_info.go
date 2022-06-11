@@ -3,15 +3,15 @@ package model
 // StoreInfo is the model
 type StoreInfo struct {
 	// ID of the store.
-	id int `json:"id"`
+	Id int `json:"id"`
 	// Name of the store.
-	name string `json:"age"`
+	Name string `json:"name"`
 }
 
 func (s *StoreInfo) GetId() int {
-	return s.id
+	return s.Id
 }
 
 func (s *StoreInfo) GetName() string {
-	return s.name
+	return s.Name
 }
