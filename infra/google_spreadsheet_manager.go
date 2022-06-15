@@ -24,35 +24,73 @@ func NewGoogleSpreadSheetService(credentialFileName string, spreadSheetId string
 }
 
 func (g *GoogleSpreadSheetService) Save(data []string) error {
-	vals := make([]*sheets.CellData, 0, len(data))
-	for i := range data {
-		vals = append(vals, &sheets.CellData{
+
+	// セルデータに変換
+	var values []*sheets.CellData
+	for i, _ := range data {
+		values = append(values, &sheets.CellData{
 			UserEnteredValue: &sheets.ExtendedValue{
 				StringValue: &data[i],
 			},
 		})
 	}
 
-	// https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/request#appendcellsrequest
-	request := []*sheets.Request{
+	// 行データに変換
+	rowData := []*sheets.RowData{
 		{
-			AppendCells: &sheets.AppendCellsRequest{
-				SheetId: 0,
-				Fields:  "*",
-				Rows: []*sheets.RowData{
-					{
-						Values: vals,
-					},
-				},
-			},
+			Values: values,
 		},
 	}
 
-	_, err := g.spreadSheetService.Spreadsheets.BatchUpdate(g.spreadSheetId, &sheets.BatchUpdateSpreadsheetRequest{
-		IncludeSpreadsheetInResponse: false,
-		Requests:                     request,
-		ResponseIncludeGridData:      false,
-	}).Do()
+	// リクエスト作成
+	// 登録店舗が更新される可能性を考慮しSpreadSheetの1行目(RowIndex=0)に登録されている店舗IDは毎回更新する
+	updateCellsRequest1 := sheets.UpdateCellsRequest{
+		Fields: "*",
+		Rows:   rowData,
+		Start: &sheets.GridCoordinate{
+			SheetId:     0,
+			RowIndex:    0,
+			ColumnIndex: 0,
+		},
+	}
+
+	// 登録店舗が更新される可能性を考慮しSpreadSheetの2行目(RowIndex=1)に登録されている店舗名は毎回更新する
+	updateCellsRequest2 := sheets.UpdateCellsRequest{
+		Fields: "*",
+		Rows:   rowData,
+		Start: &sheets.GridCoordinate{
+			SheetId:     0,
+			RowIndex:    0,
+			ColumnIndex: 0,
+		},
+	}
+
+	// 今日の分のお気に入り登録数を行の末尾に追加するためのリクエストを構築
+	appendCellsRequest := sheets.AppendCellsRequest{
+		Fields:  "*",
+		Rows:    rowData,
+		SheetId: 0,
+	}
+
+	requests := []*sheets.Request{
+		{
+			UpdateCells: &updateCellsRequest1,
+		},
+		{
+			UpdateCells: &updateCellsRequest2,
+		},
+		{
+			AppendCells: &appendCellsRequest,
+		},
+	}
+	batchRequest := &sheets.BatchUpdateSpreadsheetRequest{
+		IncludeSpreadsheetInResponse: true,
+		Requests:                     requests,
+	}
+
+	ctx := context.Background()
+	_, err := g.spreadSheetService.Spreadsheets.BatchUpdate(g.spreadSheetId, batchRequest).Context(ctx).Do()
+
 	if err != nil {
 		log.Fatal(err)
 		return err

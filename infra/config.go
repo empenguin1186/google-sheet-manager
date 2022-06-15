@@ -7,11 +7,7 @@ type FavoriteConfig struct {
 }
 
 type YakkyubinConfig struct {
-	Url     string `yaml:"url"`
-	Scheme  string `yaml:"scheme"`
-	Host    string `yaml:"host"`
-	Path    string `yaml:"path"`
-	ChainId int    `yaml:"chainId"`
+	Url string `yaml:"url"`
 }
 
 type Config struct {
