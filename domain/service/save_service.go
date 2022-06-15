@@ -2,6 +2,7 @@ package service
 
 import (
 	"google-sheet-sample/domain/client"
+	"google-sheet-sample/domain/model"
 	"log"
 	"strconv"
 	"time"
@@ -26,11 +27,51 @@ func (s *SaveService) Save() error {
 	}
 
 	// 2. 店舗情報取得
-	storeInfo, err := s.storeClient.Get()
+	storeInfoMap, max, err := s.storeClient.Get()
 	if err != nil {
 		log.Println("failed to get store info")
 		return err
 	}
+
+	// 3. 1. 2. で取得したデータを突合して更新データを生成
+	var storeIds []string
+	var storeNames []string
+	var favorites []string
+	storeIds = append(storeIds, "店舗ID")
+	storeNames = append(storeNames, "店舗名")
+	favorites = append(favorites, time.Now().Format("2006/01/02"))
+
+	for i := 1; i <= max; i++ {
+		storeIds = append(storeIds, strconv.Itoa(i))
+
+		if v, ok := storeInfoMap[i]; ok {
+			storeNames = append(storeNames, v)
+		} else {
+			storeNames = append(storeNames, "-")
+		}
+
+		if v, ok := favoriteMap[i]; ok {
+			favorites = append(favorites, strconv.Itoa(v))
+		} else {
+			favorites = append(favorites, "0")
+		}
+	}
+
+	saveData, err := model.NewSaveData(storeIds, storeNames, favorites)
+	if err != nil {
+		log.Println("failed to construct save data")
+		return err
+	}
+
+	// 4. データを保存
+	err = s.dataManager.Save(&saveData)
+	if err != nil {
+		log.Println("failed to update favorite data")
+		return err
+	}
+
+	log.Println("data save success")
+	return nil
 
 	// 店舗IDの1~最大値の配列を作成
 	// 登録店舗に更新があった場合にデータの不整合が発生しないようにするため連番で管理
@@ -50,23 +91,14 @@ func (s *SaveService) Save() error {
 	// 保存
 
 	// 3. 1. 2. で取得したデータを突合して更新データを生成
-	result := make([]string, len(storeInfo)+1)
-	result = append(result, time.Now().Format("2006/01/02"))
-	for _, e := range storeInfo {
-		if v, ok := favoriteMap[e.GetId()]; ok {
-			result = append(result, strconv.Itoa(v))
-		} else {
-			result = append(result, "0")
-		}
-	}
+	//result := make([]string, len(storeInfo)+1)
+	//result = append(result, time.Now().Format("2006/01/02"))
+	//for _, e := range storeInfo {
+	//	if v, ok := favoriteMap[e.GetId()]; ok {
+	//		result = append(result, strconv.Itoa(v))
+	//	} else {
+	//		result = append(result, "0")
+	//	}
+	//}
 
-	// 4. データを保存
-	err = s.dataManager.Save(result)
-	if err != nil {
-		log.Println("failed to update favorite data")
-		return err
-	}
-
-	log.Println("data save success")
-	return nil
 }

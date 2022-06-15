@@ -1,5 +1,7 @@
 package client
 
+import "google-sheet-sample/domain/model"
+
 type DataManager interface {
-	Save(data []string) error
+	Save(data *model.SaveData) error
 }

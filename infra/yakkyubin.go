@@ -3,7 +3,6 @@ package infra
 import (
 	"encoding/json"
 	"github.com/google/martian/log"
-	"google-sheet-sample/domain/model"
 	"io"
 	"net/http"
 	"net/url"
@@ -18,11 +17,12 @@ func NewYakkyubinClient(config *YakkyubinConfig) *YakkyubinClient {
 	return &YakkyubinClient{client: &http.Client{}, config: config}
 }
 
-func (y *YakkyubinClient) Get() ([]*model.StoreInfo, error) {
+// Get 薬急便APIを実行して店舗IDと店舗名のkey-value形式のデータおよびIDの最大値を取得する
+func (y *YakkyubinClient) Get() (map[int]string, int, error) {
 	u, err := url.Parse(y.config.Url)
 	if err != nil {
 		log.Errorf("failed to parse url: %v", err)
-		return []*model.StoreInfo{}, err
+		return map[int]string{}, 0, err
 	}
 
 	request := http.Request{}
@@ -32,31 +32,48 @@ func (y *YakkyubinClient) Get() ([]*model.StoreInfo, error) {
 	response, err := y.client.Do(&request)
 	if err != nil {
 		log.Errorf("failed to request to yakkyubin api: %v", err)
-		return []*model.StoreInfo{}, err
+		return map[int]string{}, 0, err
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode != 200 {
 		log.Errorf("status code 200 not returned to yakkyubin api: %v", err)
-		return []*model.StoreInfo{}, err
+		return map[int]string{}, 0, err
 	}
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		log.Errorf("failed to read response body: %v", err)
-		return []*model.StoreInfo{}, err
+		return map[int]string{}, 0, err
 	}
 
 	var yakkyubinResponse YakkyubinResponse
 	err = json.Unmarshal(body, &yakkyubinResponse)
 	if err != nil {
 		log.Errorf("failed to struct StoreInfo Object: %v", err)
-		return []*model.StoreInfo{}, err
+		return map[int]string{}, 0, err
 	}
 
-	return yakkyubinResponse.Pharmacies, nil
+	result := map[int]string{}
+	maximum := 0
+	for _, e := range yakkyubinResponse.Pharmacies {
+		result[e.Id] = e.Name
+		if maximum < e.Id {
+			maximum = e.Id
+		}
+	}
+
+	return result, maximum, nil
+}
+
+// StoreInfo is the model
+type StoreInfo struct {
+	// ID of the store.
+	Id int `json:"id"`
+	// Name of the store.
+	Name string `json:"name"`
 }
 
 type YakkyubinResponse struct {
-	Pharmacies []*model.StoreInfo `json:"pharmacies"`
+	Pharmacies []*StoreInfo `json:"pharmacies"`
 }

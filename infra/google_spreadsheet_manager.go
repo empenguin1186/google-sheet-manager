@@ -2,6 +2,7 @@ package infra
 
 import (
 	"context"
+	"google-sheet-sample/domain/model"
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 	"log"
@@ -23,30 +24,18 @@ func NewGoogleSpreadSheetService(credentialFileName string, spreadSheetId string
 	return &GoogleSpreadSheetService{spreadSheetService: service, spreadSheetId: spreadSheetId, sheetId: sheetId}, nil
 }
 
-func (g *GoogleSpreadSheetService) Save(data []string) error {
-
-	// セルデータに変換
-	var values []*sheets.CellData
-	for i, _ := range data {
-		values = append(values, &sheets.CellData{
-			UserEnteredValue: &sheets.ExtendedValue{
-				StringValue: &data[i],
-			},
-		})
-	}
+func (g *GoogleSpreadSheetService) Save(data *model.SaveData) error {
 
 	// 行データに変換
-	rowData := []*sheets.RowData{
-		{
-			Values: values,
-		},
-	}
+	storeIdsRowData := g.makeRowData(data.GetStoreIds())
+	storeNamesRowData := g.makeRowData(data.GetStoreNames())
+	favoritesRowData := g.makeRowData(data.GetFavorites())
 
 	// リクエスト作成
 	// 登録店舗が更新される可能性を考慮しSpreadSheetの1行目(RowIndex=0)に登録されている店舗IDは毎回更新する
 	updateCellsRequest1 := sheets.UpdateCellsRequest{
 		Fields: "*",
-		Rows:   rowData,
+		Rows:   storeIdsRowData,
 		Start: &sheets.GridCoordinate{
 			SheetId:     0,
 			RowIndex:    0,
@@ -57,10 +46,10 @@ func (g *GoogleSpreadSheetService) Save(data []string) error {
 	// 登録店舗が更新される可能性を考慮しSpreadSheetの2行目(RowIndex=1)に登録されている店舗名は毎回更新する
 	updateCellsRequest2 := sheets.UpdateCellsRequest{
 		Fields: "*",
-		Rows:   rowData,
+		Rows:   storeNamesRowData,
 		Start: &sheets.GridCoordinate{
 			SheetId:     0,
-			RowIndex:    0,
+			RowIndex:    1,
 			ColumnIndex: 0,
 		},
 	}
@@ -68,7 +57,7 @@ func (g *GoogleSpreadSheetService) Save(data []string) error {
 	// 今日の分のお気に入り登録数を行の末尾に追加するためのリクエストを構築
 	appendCellsRequest := sheets.AppendCellsRequest{
 		Fields:  "*",
-		Rows:    rowData,
+		Rows:    favoritesRowData,
 		SheetId: 0,
 	}
 
@@ -97,4 +86,25 @@ func (g *GoogleSpreadSheetService) Save(data []string) error {
 	}
 
 	return nil
+}
+
+func (g *GoogleSpreadSheetService) makeRowData(data []string) []*sheets.RowData {
+	// セルデータに変換
+	var values []*sheets.CellData
+	for i, _ := range data {
+		values = append(values, &sheets.CellData{
+			UserEnteredValue: &sheets.ExtendedValue{
+				StringValue: &data[i],
+			},
+		})
+	}
+
+	// 行データに変換
+	rowData := []*sheets.RowData{
+		{
+			Values: values,
+		},
+	}
+
+	return rowData
 }
