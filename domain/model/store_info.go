@@ -3,19 +3,19 @@ package model
 import "fmt"
 
 type SaveData struct {
-	storeIds   []string
+	storeIds   []int
 	storeNames []string
-	favorites  []string
+	favorites  []int
 }
 
-func NewSaveData(storeIds []string, storeNames []string, favorites []string) (SaveData, error) {
+func NewSaveData(storeIds []int, storeNames []string, favorites []int) (SaveData, error) {
 	if len(storeIds) == len(storeNames) && len(storeNames) == len(favorites) {
-		return SaveData{}, fmt.Errorf("each data array must have each length")
+		return SaveData{storeIds: storeIds, storeNames: storeNames, favorites: favorites}, nil
 	}
-	return SaveData{storeIds: storeIds, storeNames: storeNames, favorites: favorites}, nil
+	return SaveData{}, fmt.Errorf("each data array must have each length")
 }
 
-func (s *SaveData) GetStoreIds() []string {
+func (s *SaveData) GetStoreIds() []int {
 	return s.storeIds
 }
 
@@ -23,6 +23,6 @@ func (s *SaveData) GetStoreNames() []string {
 	return s.storeNames
 }
 
-func (s *SaveData) GetFavorites() []string {
+func (s *SaveData) GetFavorites() []int {
 	return s.favorites
 }

@@ -6,6 +6,7 @@ import (
 	"google.golang.org/api/option"
 	"google.golang.org/api/sheets/v4"
 	"log"
+	"time"
 )
 
 type GoogleSpreadSheetService struct {
@@ -27,9 +28,9 @@ func NewGoogleSpreadSheetService(credentialFileName string, spreadSheetId string
 func (g *GoogleSpreadSheetService) Save(data *model.SaveData) error {
 
 	// 行データに変換
-	storeIdsRowData := g.makeRowData(data.GetStoreIds())
-	storeNamesRowData := g.makeRowData(data.GetStoreNames())
-	favoritesRowData := g.makeRowData(data.GetFavorites())
+	storeIdsRowData := g.makeNumberRowData("店舗ID", data.GetStoreIds())
+	storeNamesRowData := g.makeStringRowData("店舗名", data.GetStoreNames())
+	favoritesRowData := g.makeNumberRowData(time.Now().Format("2006/01/02"), data.GetFavorites())
 
 	// リクエスト作成
 	// 登録店舗が更新される可能性を考慮しSpreadSheetの1行目(RowIndex=0)に登録されている店舗IDは毎回更新する
@@ -88,9 +89,48 @@ func (g *GoogleSpreadSheetService) Save(data *model.SaveData) error {
 	return nil
 }
 
-func (g *GoogleSpreadSheetService) makeRowData(data []string) []*sheets.RowData {
+func (g *GoogleSpreadSheetService) makeNumberRowData(item string, data []int) []*sheets.RowData {
 	// セルデータに変換
 	var values []*sheets.CellData
+
+	// 最初に項目を追加
+	values = append(values, &sheets.CellData{
+		UserEnteredValue: &sheets.ExtendedValue{
+			StringValue: &item,
+		},
+	})
+
+	// 実際のデータを追加
+	for i, _ := range data {
+		value := float64(data[i])
+		values = append(values, &sheets.CellData{
+			UserEnteredValue: &sheets.ExtendedValue{
+				NumberValue: &value,
+			},
+		})
+	}
+
+	// 行データに変換
+	rowData := []*sheets.RowData{
+		{
+			Values: values,
+		},
+	}
+
+	return rowData
+}
+
+func (g *GoogleSpreadSheetService) makeStringRowData(item string, data []string) []*sheets.RowData {
+	// セルデータに変換
+	var values []*sheets.CellData
+
+	// 最初に項目を追加
+	values = append(values, &sheets.CellData{
+		UserEnteredValue: &sheets.ExtendedValue{
+			StringValue: &item,
+		},
+	})
+
 	for i, _ := range data {
 		values = append(values, &sheets.CellData{
 			UserEnteredValue: &sheets.ExtendedValue{

@@ -4,8 +4,6 @@ import (
 	"google-sheet-sample/domain/client"
 	"google-sheet-sample/domain/model"
 	"log"
-	"strconv"
-	"time"
 )
 
 type SaveService struct {
@@ -34,29 +32,27 @@ func (s *SaveService) Save() error {
 	}
 
 	// 3. 1. 2. で取得したデータを突合して更新データを生成
-	var storeIds []string
+	var storeIds []int
 	var storeNames []string
-	var favorites []string
-	storeIds = append(storeIds, "店舗ID")
-	storeNames = append(storeNames, "店舗名")
-	favorites = append(favorites, time.Now().Format("2006/01/02"))
+	var favorites []int
 
 	// 1~(店舗IDの最大値)の間で下記の処理を繰り返す
 	// 登録店舗に更新があった場合にデータの不整合が発生しないようにするため連番で管理
 	// 店舗情報が削除され葉抜きのIDになった場合にデータの不整合が発生するのでそれを回避
-	for i := 1; i <= max; i++ {
-		storeIds = append(storeIds, strconv.Itoa(i))
+	for i := 0; i < max; i++ {
+		storeId := i + 1
+		storeIds = append(storeIds, storeId)
 
-		if v, ok := storeInfoMap[i]; ok {
+		if v, ok := storeInfoMap[storeId]; ok {
 			storeNames = append(storeNames, v)
 		} else {
 			storeNames = append(storeNames, "-")
 		}
 
 		if v, ok := favoriteMap[i]; ok {
-			favorites = append(favorites, strconv.Itoa(v))
+			favorites = append(favorites, v)
 		} else {
-			favorites = append(favorites, "0")
+			favorites = append(favorites, 0)
 		}
 	}
 
