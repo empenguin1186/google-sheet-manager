@@ -10,10 +10,10 @@ import (
 
 type YakkyubinClient struct {
 	client *http.Client
-	config *YakkyubinConfig
+	config *ApiConfig
 }
 
-func NewYakkyubinClient(config *YakkyubinConfig) *YakkyubinClient {
+func NewYakkyubinClient(config *ApiConfig) *YakkyubinClient {
 	return &YakkyubinClient{client: &http.Client{}, config: config}
 }
 

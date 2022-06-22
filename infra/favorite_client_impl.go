@@ -1,8 +1,72 @@
 package infra
 
+import (
+	"encoding/json"
+	"github.com/google/martian/log"
+	"io"
+	"net/http"
+	"net/url"
+)
+
 type FavoriteClientImpl struct {
+	client  *http.Client
+	idToken string
+	config  *ApiConfig
+}
+
+func NewFavoriteClientImpl(idToken string, config *ApiConfig) *FavoriteClientImpl {
+	return &FavoriteClientImpl{client: &http.Client{}, idToken: idToken, config: config}
 }
 
 func (f FavoriteClientImpl) Get() (map[int]int, error) {
-	return map[int]int{1: 1, 100: 1, 101: 2, 102: 3}, nil
+	u, err := url.Parse(f.config.Url)
+	if err != nil {
+		log.Errorf("failed to parse url: %v", err)
+		return map[int]int{}, err
+	}
+
+	request := http.Request{}
+	request.URL = u
+	request.Method = "GET"
+
+	response, err := f.client.Do(&request)
+	if err != nil {
+		log.Errorf("failed to request to favorite api: %v", err)
+		return map[int]int{}, err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != 200 {
+		log.Errorf("status code 200 not returned to favorite api: %v", err)
+		return map[int]int{}, err
+	}
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		log.Errorf("failed to read response body: %v", err)
+		return map[int]int{}, err
+	}
+
+	var favoriteResponse FavoriteResponse
+	err = json.Unmarshal(body, &favoriteResponse)
+	if err != nil {
+		log.Errorf("failed to struct StoreInfo Object: %v", err)
+		return map[int]int{}, err
+	}
+
+	result := map[int]int{}
+	for _, e := range favoriteResponse.Results {
+		result[e.StoreId] = e.Favorite
+	}
+
+	return result, nil
+}
+
+type FavoriteInfo struct {
+	StoreId  int `json:"storeId"`
+	Favorite int `json:"favorite"`
+}
+
+type FavoriteResponse struct {
+	Results []*FavoriteInfo `json:"results"`
 }

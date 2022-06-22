@@ -1,6 +1,4 @@
 favorite:
-  scheme: http
-  host: localhost
-  path: admin/favorites
+  url: https://dev-api.qol-okusuri.jp/qolmini/admin/store/favorite
 yakkyubin:
   url: https://api-pharmacy-pharmacy.dx-base.com/pharmacies?chain_id=6
