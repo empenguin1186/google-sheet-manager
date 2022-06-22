@@ -2,8 +2,8 @@ package infra
 
 import (
 	"encoding/json"
-	"github.com/google/martian/log"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 )
@@ -21,7 +21,7 @@ func NewYakkyubinClient(config *ApiConfig) *YakkyubinClient {
 func (y *YakkyubinClient) Get() (map[int]string, int, error) {
 	u, err := url.Parse(y.config.Url)
 	if err != nil {
-		log.Errorf("failed to parse url: %v", err)
+		log.Printf("failed to parse url: %v", err)
 		return map[int]string{}, 0, err
 	}
 
@@ -31,26 +31,26 @@ func (y *YakkyubinClient) Get() (map[int]string, int, error) {
 
 	response, err := y.client.Do(&request)
 	if err != nil {
-		log.Errorf("failed to request to yakkyubin api: %v", err)
+		log.Printf("failed to request to yakkyubin api: %v", err)
 		return map[int]string{}, 0, err
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode != 200 {
-		log.Errorf("status code 200 not returned to yakkyubin api: %v", err)
+		log.Printf("status code 200 not returned to yakkyubin api: %v", err)
 		return map[int]string{}, 0, err
 	}
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
-		log.Errorf("failed to read response body: %v", err)
+		log.Printf("failed to read response body: %v", err)
 		return map[int]string{}, 0, err
 	}
 
 	var yakkyubinResponse YakkyubinResponse
 	err = json.Unmarshal(body, &yakkyubinResponse)
 	if err != nil {
-		log.Errorf("failed to struct StoreInfo Object: %v", err)
+		log.Printf("failed to struct StoreInfo Object: %v", err)
 		return map[int]string{}, 0, err
 	}
 

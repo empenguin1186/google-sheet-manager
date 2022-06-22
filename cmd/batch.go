@@ -33,6 +33,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to cast string to integer: %v", err)
 	}
+	idToken := os.Getenv("ID_TOKEN")
 
 	// 各種構造体構築
 	yakkyubinClient := infra.NewYakkyubinClient(&config.Yakyuubin)
@@ -40,7 +41,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to struct GoogleSpreadSheetManager: %v", err)
 	}
-	favoriteClientImpl := infra.FavoriteClientImpl{}
+	favoriteClientImpl := infra.NewFavoriteClientImpl(idToken, &config.Favorite)
 
 	saveService := service.NewSaveService(favoriteClientImpl, yakkyubinClient, googleSpreadSheetManager)
 

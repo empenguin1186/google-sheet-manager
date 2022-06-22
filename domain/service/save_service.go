@@ -49,7 +49,7 @@ func (s *SaveService) Save() error {
 			storeNames = append(storeNames, "-")
 		}
 
-		if v, ok := favoriteMap[i]; ok {
+		if v, ok := favoriteMap[storeId]; ok {
 			favorites = append(favorites, v)
 		} else {
 			favorites = append(favorites, 0)
