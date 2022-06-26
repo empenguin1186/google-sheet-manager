@@ -42,5 +42,6 @@ $ aws cognito-idp admin-initiate-auth   --user-pool-id ${ユーザプールID}  
 ```bash
 $ make run
 ```
+実行後、`2022/06/26 11:59:32 data save success` といったような出力がされれば Spread Sheet に値が記録されています。
 
 

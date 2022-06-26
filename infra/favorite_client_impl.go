@@ -2,6 +2,7 @@ package infra
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -42,7 +43,7 @@ func (f FavoriteClientImpl) Get() (map[int]int, error) {
 
 	if response.StatusCode != 200 {
 		log.Printf("status code 200 not returned to favorite api: %v", err)
-		return map[int]int{}, err
+		return map[int]int{}, fmt.Errorf("status code 200 not returned to favorite api")
 	}
 
 	body, err := io.ReadAll(response.Body)
