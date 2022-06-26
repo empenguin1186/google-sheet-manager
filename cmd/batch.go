@@ -27,7 +27,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
-	credentialFileName := "empentech.json"
+	credentialFileName := "credential.json"
 	spreadsheetId := os.Getenv("SPREADSHEET_ID")
 	sheetId, err := strconv.Atoi(os.Getenv("SHEET_ID"))
 	if err != nil {
@@ -37,7 +37,7 @@ func main() {
 
 	// 各種構造体構築
 	yakkyubinClient := infra.NewYakkyubinClient(&config.Yakyuubin)
-	googleSpreadSheetManager, err := infra.NewGoogleSpreadSheetService(credentialFileName, spreadsheetId, sheetId)
+	googleSpreadSheetManager, err := infra.NewGoogleSpreadSheetService(credentialFileName, spreadsheetId, int64(sheetId))
 	if err != nil {
 		log.Fatalf("failed to struct GoogleSpreadSheetManager: %v", err)
 	}
@@ -45,7 +45,7 @@ func main() {
 
 	saveService := service.NewSaveService(favoriteClientImpl, yakkyubinClient, googleSpreadSheetManager)
 
-	// 処理実行
+	// 集計処理実行
 	err = saveService.Save()
 	if err != nil {
 		log.Fatalf("failed to save data: %v", err)

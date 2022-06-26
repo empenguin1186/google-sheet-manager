@@ -12,10 +12,10 @@ import (
 type GoogleSpreadSheetService struct {
 	spreadSheetService *sheets.Service
 	spreadSheetId      string
-	sheetId            int
+	sheetId            int64
 }
 
-func NewGoogleSpreadSheetService(credentialFileName string, spreadSheetId string, sheetId int) (*GoogleSpreadSheetService, error) {
+func NewGoogleSpreadSheetService(credentialFileName string, spreadSheetId string, sheetId int64) (*GoogleSpreadSheetService, error) {
 	credential := option.WithCredentialsFile(credentialFileName)
 	service, err := sheets.NewService(context.TODO(), credential)
 	if err != nil {
@@ -38,7 +38,7 @@ func (g *GoogleSpreadSheetService) Save(data *model.SaveData) error {
 		Fields: "*",
 		Rows:   storeIdsRowData,
 		Start: &sheets.GridCoordinate{
-			SheetId:     0,
+			SheetId:     g.sheetId,
 			RowIndex:    0,
 			ColumnIndex: 0,
 		},
@@ -49,7 +49,7 @@ func (g *GoogleSpreadSheetService) Save(data *model.SaveData) error {
 		Fields: "*",
 		Rows:   storeNamesRowData,
 		Start: &sheets.GridCoordinate{
-			SheetId:     0,
+			SheetId:     g.sheetId,
 			RowIndex:    1,
 			ColumnIndex: 0,
 		},
@@ -59,7 +59,7 @@ func (g *GoogleSpreadSheetService) Save(data *model.SaveData) error {
 	appendCellsRequest := sheets.AppendCellsRequest{
 		Fields:  "*",
 		Rows:    favoritesRowData,
-		SheetId: 0,
+		SheetId: g.sheetId,
 	}
 
 	requests := []*sheets.Request{

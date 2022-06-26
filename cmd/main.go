@@ -5,71 +5,49 @@ package main
 //	"context"
 //	"fmt"
 //	"github.com/joho/godotenv"
+//	"google-sheet-sample/infra"
 //	"google.golang.org/api/option"
 //	"google.golang.org/api/sheets/v4"
+//	"gopkg.in/yaml.v3"
+//	"io/ioutil"
 //	"log"
-//	"os"
 //)
 //
 //func main() {
-//	err := godotenv.Load()
+//	// 設定ファイル読みこみ
+//	data, err := ioutil.ReadFile("config.yaml")
 //	if err != nil {
-//		log.Fatal("Error loading .env file")
+//		log.Fatalf("failed to read config.yaml: %v", err)
+//	}
+//	config := infra.Config{}
+//	err = yaml.Unmarshal(data, &config)
+//	if err != nil {
+//		log.Fatalf("failed to struct config: %v", err)
 //	}
 //
-//	credentialFileName := os.Getenv("CREDENTIAL_FILENAME")
-//	spreadsheetId := os.Getenv("SPREADSHEET_ID")
+//	err = godotenv.Load()
+//	if err != nil {
+//		log.Fatalf("Error loading .env file: %v", err)
+//	}
+//	credentialFileName := "credential.json"
+//	//spreadsheetId := os.Getenv("SPREADSHEET_ID")
+//	//sheetId, err := strconv.Atoi(os.Getenv("SHEET_ID"))
+//	//if err != nil {
+//	//	log.Fatalf("failed to cast string to integer: %v", err)
+//	//}
 //
 //	credential := option.WithCredentialsFile(credentialFileName)
-//	srv, err := sheets.NewService(context.TODO(), credential)
+//	service, err := sheets.NewService(context.TODO(), credential)
+//	if err != nil {
+//		log.Fatalf("failed to create google spread sheet service: %v", err)
+//	}
+//
+//	rangeVal := "シート4"
+//	ctx := context.Background()
+//	resp, err := service.Spreadsheets.Values.Get("19shjxKXH1apr51YCluuJr4dKxSviTITPA5dd8cWgNLA", rangeVal).ValueRenderOption("FORMATTED_VALUE").Context(ctx).Do()
 //	if err != nil {
 //		log.Fatal(err)
 //	}
-//	readRange := "シート1"
-//	resp, err := srv.Spreadsheets.Values.Get(spreadsheetId, readRange).Do()
-//	if err != nil {
-//		log.Fatalln(err)
-//	}
-//	if len(resp.Values) == 0 {
-//		log.Fatalln("data not found")
-//	}
-//	for _, row := range resp.Values {
-//		for _, col := range row {
-//			fmt.Printf("%s, ", col)
-//		}
-//		fmt.Println("")
-//	}
 //
-//	data := []string{"2022/06/10", "aaa", "bbb", "ccc"}
-//	vals := make([]*sheets.CellData, 0, len(data))
-//	for i := range data {
-//		vals = append(vals, &sheets.CellData{
-//			UserEnteredValue: &sheets.ExtendedValue{
-//				StringValue: &data[i],
-//			},
-//		})
-//	}
-//
-//	req := []*sheets.Request{
-//		{
-//			AppendCells: &sheets.AppendCellsRequest{
-//				SheetId: 0,
-//				Fields:  "*",
-//				Rows: []*sheets.RowData{
-//					{
-//						Values: vals,
-//					},
-//				},
-//			},
-//		},
-//	}
-//
-//	_, err = srv.Spreadsheets.BatchUpdate(spreadsheetId, &sheets.BatchUpdateSpreadsheetRequest{
-//		IncludeSpreadsheetInResponse: false,
-//		Requests:                     req,
-//		ResponseIncludeGridData:      false,
-//	}).Do()
-//	if err != nil {
-//		log.Fatal(err)
-//	}
+//	fmt.Printf("%#v\n", resp)
 //}
