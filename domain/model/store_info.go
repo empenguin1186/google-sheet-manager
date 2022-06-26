@@ -12,7 +12,7 @@ func NewSaveData(storeIds []int, storeNames []string, favorites []int) (SaveData
 	if len(storeIds) == len(storeNames) && len(storeNames) == len(favorites) {
 		return SaveData{storeIds: storeIds, storeNames: storeNames, favorites: favorites}, nil
 	}
-	return SaveData{}, fmt.Errorf("each data array must have each length")
+	return SaveData{}, fmt.Errorf("each data array must have same length")
 }
 
 func (s *SaveData) GetStoreIds() []int {

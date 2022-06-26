@@ -2,6 +2,7 @@ package infra
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -38,7 +39,7 @@ func (y *YakkyubinClient) Get() (map[int]string, int, error) {
 
 	if response.StatusCode != 200 {
 		log.Printf("status code 200 not returned to yakkyubin api: %v", err)
-		return map[int]string{}, 0, err
+		return map[int]string{}, 0, fmt.Errorf("status code 200 not returned to yakkyubin api")
 	}
 
 	body, err := io.ReadAll(response.Body)

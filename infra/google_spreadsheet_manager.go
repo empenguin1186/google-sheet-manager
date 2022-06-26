@@ -82,7 +82,7 @@ func (g *GoogleSpreadSheetService) Save(data *model.SaveData) error {
 	_, err := g.spreadSheetService.Spreadsheets.BatchUpdate(g.spreadSheetId, batchRequest).Context(ctx).Do()
 
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("failed to call google sheets batch update api: %v", err)
 		return err
 	}
 
